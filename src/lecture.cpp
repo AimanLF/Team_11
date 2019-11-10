@@ -1,78 +1,90 @@
 #include "lecture.hpp"
+#include <ctype.h>
 #include <iostream>
 
 
 //chercher directement les position; verifier ACGT ??
 LiseurFasta::LiseurFasta(std::vector<size_t> markers_)
-	: markers(markers_)
-	{
-		std::sort(markers.begin(), markers.end());
-	}
-    
+    : markers(markers_)
+{
+    std::sort(markers.begin(), markers.end());
+}
+
+
 void LiseurFasta::lire(std::istream& source) {
     char ch;
 
-    while (source.get(ch)) {
-      if (ch == '>') {
-        std::string name;
-        std::getline(source, name);
+    while (true) {
+        if (!source.get(ch)) {
+            return;
+        }
 
-        char ch;
+        if (ch == '\n') {
+            continue;
+        } if (ch == '>') {
+            break;
+        }
 
-        size_t char_index(0);
-        size_t marker_index(0);
+        throw std::invalid_argument("Charactère inattendu '" + std::string(1, ch) + "', attendu '>'");
+    }
+
+
+    while (true) {
+        std::string nom;
+        std::getline(source, nom);
 
         std::vector<char> allele;
+        size_t indice_char(0);
+        size_t marker_index(0);
+        bool nouvelle_ligne(true);
 
-        while (source.get(ch)) {
-          if (ch == '>') {
-            source.unget();
-            break;
-          }
+        bool eof;
 
-          if (ch == '\n') {
-            continue;
-          }
+        while (!(eof = !source.get(ch))) {
+            if (ch == '\n') {
+                nouvelle_ligne = true;
+                continue;
+            }
 
-          if (ch != 'A' && ch != 'C' && ch != 'T' && ch != 'G') {
-            std::string message("Unexpected token '");
-            message.push_back(ch);
-            message += "', expected 'A', 'C', 'T' or 'G'";
+            if (nouvelle_ligne && ch == '>') {
+                break;
+            }
 
-            throw std::invalid_argument(message);
-          }
+            char ch_maj = toupper(ch);
 
-          if (marker_index == markers.size()) {
-            continue;
-          }
+            if (ch_maj != 'A' && ch_maj != 'C' && ch_maj != 'T' && ch_maj != 'G') {
+                throw std::invalid_argument("Charactère inattendu '" + std::string(1, ch)
+                        + "' à l'indice " + std::to_string(indice_char)
+                        + " dans la séquence '" + nom + "', attendu 'A', 'C', 'T' ou 'G'");
+            }
 
-          if (char_index == markers[marker_index]) {
-            allele.push_back(ch);
-            marker_index += 1;
-          }
+            if (marker_index < markers.size() && indice_char == markers[marker_index]) {
+                allele.push_back(ch_maj);
+                marker_index++;
+            }
 
-          char_index += 1;
+            indice_char++;
+            nouvelle_ligne = false;
         }
+
 
         if (marker_index != markers.size()) {
-          throw std::invalid_argument("Unexpected token, expected 'A', 'C', 'T' or 'G'");
+            throw std::invalid_argument("Nombre insuffisant de marqueurs pour la séquence '"
+                    + nom + "' de " + std::to_string(indice_char) + " bases, attendues au moins "
+                    + std::to_string(markers.back() + 1) + " bases");
         }
 
-		if(alleles.count(allele) == 0){
-			alleles[allele] = 1; //le cree automatiquement
-		} else {
-			alleles[allele] += 1;
-		}
-		
-		total_occurences += 1;
+        if (alleles.count(allele) == 0) {
+            alleles[allele] = 1; // le crée automatiquement
+        } else {
+            alleles[allele] += 1;
+        }
 
-      } else if (ch != '\n') {
-        std::string message("Unexpected token '");
-        message.push_back(ch);
-        message += "', expected '\\n' or '>'";
+        total_occurences += 1;
 
-        throw std::invalid_argument(message);
-      }
+        if (eof) {
+            break;
+        }
     }
 }
 
