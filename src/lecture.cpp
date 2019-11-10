@@ -1,4 +1,4 @@
-#include "lecture.h"
+#include "lecture.hpp"
 #include <iostream>
 
 
