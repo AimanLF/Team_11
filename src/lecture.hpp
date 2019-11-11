@@ -27,6 +27,11 @@ public:
     void lire(std::istream& source);
 
     /**
+     * Lit le fichier FASTA dont le chemin est donné.
+     */
+    void lire_fichier(const std::string& chemin);
+
+    /**
      * Renvoie un tableau des fréquences de chaque allèles, dans le même ordre
      * que alleles_seq().
      */

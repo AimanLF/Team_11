@@ -88,6 +88,17 @@ void LiseurFasta::lire(std::istream& source) {
     }
 }
 
+void LiseurFasta::lire_fichier(const std::string& chemin) {
+    std::ifstream fichier(chemin);
+
+    if (fichier.fail()) {
+        throw std::runtime_error("Impossible de lire le fichier '" + chemin + "'");
+    }
+
+    lire(fichier);
+    fichier.close();
+}
+
 std::vector<double> LiseurFasta::frequence_alleles() const{
     std::vector<double> freq;
     for(auto allele : alleles){
@@ -103,3 +114,4 @@ std::vector<std::string> LiseurFasta::alleles_seq() const {
     }
     return alleles_seq_;
 }
+

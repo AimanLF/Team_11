@@ -18,6 +18,12 @@ int main(int argc, char **argv){
 	
 	std::vector<size_t> liste_marqueurs = marqueurs.getValue();
 	LiseurFasta lecteur(liste_marqueurs);
-	//lecteur.lire(fichier.getValue());   lire prend un istream en parametre, pas une string: le lecteur fournit un nom de fichier sous forme de string qu'il faudrait ensuite aller chercher en tant que fichier, en tant que istream? 
+
+    try {
+        lecteur.lire_fichier(fichier.getValue());
+    } catch (const std::exception& e) {
+        std::cerr << "Erreur : " << e.what() << std::endl;
+    }
+
 	return 0;
 }
